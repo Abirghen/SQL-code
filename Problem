@@ -1,0 +1,219 @@
+CREATE DATABASE Airport_Loyalty_Group;
+USE Airport_Loyalty_Group;
+
+
+-- creating tables
+CREATE TABLE Merchants (
+	ID INT NOT NULL,
+    name VARCHAR(30) NOT NULL,
+    terminal VARCHAR(2),
+    PRIMARY KEY (ID) );
+    
+CREATE TABLE Members (
+	ID INT NOT NULL,
+    first_name VARCHAR(20),
+    last_name VARCHAR(30),
+    email_address VARCHAR(50),
+    phone_number INT,
+    PRIMARY KEY (ID) );
+
+CREATE TABLE Transactions (
+	ID INT NOT NULL AUTO_INCREMENT,
+    amount float,
+    card_fingerprint INT,
+    merchant_id INT,
+    cashier_id INT,
+    time_stamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (ID) );
+
+CREATE TABLE Cashiers (
+	ID INT NOT NULL,
+    first_name CHAR(20),
+    last_name VARCHAR(30),
+    merchant_id INT NOT NULL,
+    PRIMARY KEY (ID) );
+
+CREATE TABLE Card_Fingerprints (
+	card_fingerprint INT NOT NULL,
+    member_id INT,
+    PRIMARY KEY (card_fingerprint) );
+
+CREATE TABLE Points_Log (
+	transaction_id INT NOT NULL,
+    member_id INT NOT NULL,
+    point_transaction FLOAT,
+    time_stamp DATETIME NOT NULL,
+    PRIMARY KEY (transaction_id) );
+
+CREATE TABLE Program_Status (
+	member_id INT NOT NULL AUTO_INCREMENT,
+    time_stamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    total_points INT,
+    member_level VARCHAR(20),
+    CONSTRAINT PK_point_addition PRIMARY KEY (member_id, time_stamp) );
+
+DROP TABLE Program_Status;
+    
+ -- setting foreign keys
+ALTER TABLE Program_Status
+ADD CONSTRAINT fk_member_id FOREIGN KEY (member_id)
+REFERENCES Members (ID);
+
+ALTER TABLE Points_Log
+ADD CONSTRAINT fk_member_id_log FOREIGN KEY (member_id)
+REFERENCES Members (ID);
+
+ALTER TABLE Points_Log
+ADD CONSTRAINT fk_transaction_id FOREIGN KEY (transaction_id)
+REFERENCES Transactions (ID);
+
+-- no because: you can have a new card_fingerprint make a transaction
+-- ALTER TABLE Transactions
+-- ADD CONSTRAINT fk_card_fingerprint FOREIGN KEY (card_fingerprint)
+-- REFERENCES Card_Fingerprints (card_fingerprint);
+
+ALTER TABLE Transactions
+ADD CONSTRAINT fk_merchant_id FOREIGN KEY (merchant_id)
+REFERENCES Merchants (ID);
+
+-- yes: if it does have a member associated to it, then it must come from the Members table
+ALTER TABLE Card_Fingerprints
+ADD CONSTRAINT fk_member_id_fingerprint FOREIGN KEY (member_id)
+REFERENCES Members (ID);
+
+-- does not work because it is already a primary key.
+-- ALTER TABLE Card_Fingerprints
+-- ADD CONSTRAINT fk_card_fingerprint FOREIGN KEY (card_fingerprint)
+-- REFERENCES Transactions (card_fingerprint);
+
+ALTER TABLE Cashiers
+ADD CONSTRAINT fk_merchant FOREIGN KEY (merchant_id)
+REFERENCES Merchants (ID);
+
+ALTER TABLE Transactions
+ADD CONSTRAINT fk_cashier FOREIGN KEY (cashier_id)
+REFERENCES Cashiers (ID);
+
+-- populating the tables 
+INSERT INTO Merchants (ID, name, terminal)
+VALUES (1,"Rhoncus Proin Incorporated",2),
+(2,"Integer Sem Incorporated",2),
+(3,"Risus In Associates",4),
+(4,"Egestas Consulting",3),
+(5,"Vitae Sodales LLP",3),
+(6,"Hendrerit A Arcu Limited",3),
+(7,"Nullam LLC",4),
+(8,"Quisque Institute",1),
+(9,"Et Netus Corp.",3),
+(10,"Lacinia Mattis Integer LLP",3);
+
+INSERT INTO Transactions (ID,amount,card_fingerprint,merchant_id,cashier_id,time_stamp) VALUES (1, 98.98,6,2,9,"2021-02-14 01:26:52"),(2,45.58,7,5,9,"2020-01-26 07:46:43"),
+(3,41.14,3,1,9,"2020-12-11 12:26:58"),(4,52.25,9,6,9,"2020-04-20 11:24:19"),(5,16.40,7,8,2,"2021-07-05 00:15:40"),(6,59.07,3,5,10,"2021-02-23 16:45:22"),
+(7,27.77,9,3,10,"2021-04-29 19:17:20"),(8,14.02,4,3,8,"2020-06-17 02:48:30"),
+(9,73.55,7,1,9,"2019-10-16 01:41:14"),(10,93.99,8,4,8,"2020-06-18 15:32:34");
+
+INSERT INTO Card_Fingerprints (card_fingerprint,member_id) 
+VALUES (1,10),(2,7),(3,6),(4,3),(5,9),(6,6),(7,8),(8,10),(9,3),(10,8);
+
+INSERT INTO Cashiers (ID,first_name,last_name,merchant_ID) VALUES (1,"Lacey","Rowe",6),
+(2,"Zeus","Cervantes",10),(3,"Chava","Huffman",10),(4,"Walter","Castaneda",7),
+(5,"Harlan","Estrada",9),(6,"Quentin","Middleton",1),
+(7,"Shelby","Hale",8),(8,"Meredith","Mcintyre",6),
+(9,"Tallulah","William",9),(10,"Kane","Ware",3);
+
+INSERT INTO Members (ID,first_name,last_name,email_address,phone_number) VALUES (1,"Alvin","Morris","nec.urna@sodalesnisi.ca",01749777093),
+(2,"Valentine","Colon","parturient.montes.nascetur@parturient.com",0559091552),
+(3,"Judah","Henson","aliquet@ut.ca",01192213349),
+(4,"Zachery","Herman","feugiat.Sed.nec@sollicitudinorcisem.com",01692764210),
+(5,"Nissim","Stone","erat@molestietellus.edu",0566304168),
+(6,"Shelley","Hewitt","Nam.ligula@ligulaAenean.edu",0939099564),
+(7,"Gloria","Tran","non.feugiat@VivamusnisiMauris.com",0119912879),
+(8,"Dylan","Price","libero.est@accumsan.co.uk",0766199847),
+(9,"Stacy","Patrick","ac@mi.com",0550788971),
+(10,"Lucius","Abbott","vel.turpis@ipsumportaelit.ca",016971031);
+
+INSERT INTO Points_Log (transaction_id,member_id,point_transaction,time_stamp) VALUES (1,4,12,"2020-02-01 19:07:20"),(2,6,93,"2019-12-05 10:03:38"),(3,9,22,"2020-03-15 15:07:15"),
+(4,4,-87,"2019-12-29 07:41:50"),(5,6,-86,"2021-03-20 18:17:43"),
+(6,2,69,"2020-05-13 09:20:01"),(7,2,-14,"2021-03-28 00:46:22"),
+(8,7,-33,"2020-04-24 18:34:34"),(9,6,79,"2021-02-26 15:25:03"),(10,2,74,"2021-02-03 07:15:51");
+
+INSERT INTO Program_Status (member_id,time_stamp, total_points) VALUES (2,"2021-01-17 01:08:14", 87),(8,"2020-10-09 02:37:18", 93),
+(1,"2020-03-29 17:09:58", -5),(7,"2020-11-14 03:22:20", 10),
+(1,"2021-02-06 18:58:00", 27),(8,"2020-02-17 11:47:16", 54),
+(1,"2021-02-18 18:05:33", 9),(5,"2021-08-07 01:55:04", -2),
+(3,"2020-01-27 11:14:28", 8),(7,"2019-09-23 21:39:48", 43);
+
+
+-- creating TRANSACTION to add up point_transaction and provide total_points
+START TRANSACTION;
+SELECT
+    total_points
+FROM
+    Program_Status
+WHERE
+   member_id = 5;
+--------
+SET @PointTransaction = -64;
+--------
+UPDATE Program_Status
+SET
+    total_points = total_points - 64
+WHERE
+    member_id = 5;
+
+select *
+from Program_status;
+COMMIT;
+
+-- creating PROCEDURE to determine member_level
+DELIMITER //
+CREATE PROCEDURE Member_Level ()
+BEGIN
+
+UPDATE Program_Status
+SET member_level = 'PLATINUM' WHERE total_points>60;
+UPDATE Program_Status
+SET member_level = 'GOLD' WHERE total_points <= 60 AND total_points >=40;
+UPDATE Program_Status
+SET member_level = 'SILVER' WHERE total_points<40;
+ 
+END//
+
+CALL Member_Level();
+SELECT * FROM Program_Status;
+ 
+
+-- creating VIEW with members & program_status 
+CREATE VIEW vw_member_status
+AS 
+SELECT m.ID, m.first_name, m.last_name, m.email_address, p.total_points, p.member_level
+FROM Members AS m 
+LEFT JOIN Program_Status AS p
+ON m.ID = p.member_id;
+SELECT * FROM vw_member_status;
+SELECT * FROM Members;
+SELECT * FROM Program_Status;
+
+
+-- creating PROCEDURE: for every transaction by recognised card_fingerprint, show all transactions by that card_fingerprint
+DELIMITER //
+CREATE PROCEDURE CardHistory (IN card_used INT, IN amount INT)
+BEGIN
+
+INSERT INTO Transactions (card_fingerprint, amount)
+VALUES (card_used, amount) ;
+
+SELECT t.card_fingerprint, t.amount, t.merchant_id, c.member_id
+FROM Transactions as t INNER JOIN Card_Fingerprints as c
+ON t.card_fingerprint = c.card_fingerprint
+WHERE t.card_fingerprint = card_used;
+ 
+END//
+
+CALL CardHistory (7, 60);
+
+
+
+    
+    
+    
